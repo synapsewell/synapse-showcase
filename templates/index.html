@@ -647,10 +647,10 @@
             submitBtn.innerText = currentLang === 'EN' ? 'Sending...' : 'Отправка...';
 
             // Форматируем текст пуша, который прилетит на телефон
-            const pushMessage = `📦 Товар: ${selectedProduct}\n👤 Контакт: ${contactInput}\n📝 ТЗ: ${taskInput}`;
+            const pushMessage = ` Товар: ${selectedProduct}\n Контакт: ${contactInput}\n ТЗ: ${taskInput}`;
 
             // Твоя секретная тема ntfy
-            const ntfyUrl = "https://ntfy.sh";
+            const ntfyUrl = "https://ntfy.sh/synapse-orders";
 
             try {
                 // Браузер сам отправляет POST-запрос на ntfy в обход Flask-сервера
