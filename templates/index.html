@@ -646,36 +646,39 @@
             const originalBtnText = submitBtn.innerText;
             submitBtn.innerText = currentLang === 'EN' ? 'Sending...' : 'Отправка...';
 
+            // Форматируем текст пуша, который прилетит на телефон
+            const pushMessage = `📦 Товар: ${selectedProduct}\n👤 Контакт: ${contactInput}\n📝 ТЗ: ${taskInput}`;
+
+            // Твоя секретная тема ntfy
+            const ntfyUrl = "https://ntfy.sh";
+
             try {
-                const response = await fetch('/submit-order', {
+                // Браузер сам отправляет POST-запрос на ntfy в обход Flask-сервера
+                const response = await fetch(ntfyUrl, {
                     method: 'POST',
+                    body: pushMessage,
                     headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        product_name: selectedProduct,
-                        client_contact: contactInput,
-                        client_task: taskInput,
-                        lang: currentLang
-                    })
+                        'Title': 'New Order!',
+                        'Priority': 'high',
+                        'Tags': 'shopping_bags,bell'
+                    }
                 });
 
-                const result = await response.json();
-
-                if (response.ok && result.status === 'success') {
+                if (response.ok) {
                     alert(currentLang === 'EN' ? 'Thank you! Your order has been successfully submitted.' : 'Спасибо! Ваш заказ успешно отправлен.');
                     closeOrderModal();
                 } else {
                     alert(currentLang === 'EN' ? 'Error sending order. Please try again.' : 'Ошибка отправки заказа. Пожалуйста, попробуйте еще раз.');
                 }
             } catch (error) {
-                console.error('Network Error:', error);
-                alert(currentLang === 'EN' ? 'Server unavailable. Check connection.' : 'Сервер недоступен. Проверьте соединение.');
+                console.error('Direct ntfy Error:', error);
+                alert(currentLang === 'EN' ? 'Network error. Please check your connection.' : 'Сетевая ошибка. Пожалуйста, проверьте соединение.');
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.innerText = originalBtnText;
             }
         }
+
 
         // База мультиязычности
         const translations = {
