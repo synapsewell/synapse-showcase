@@ -1,0 +1,47 @@
+[
+    {
+        "id": 1,
+        "tag": "Python / Flask",
+        "title": "QuickQR Generator",
+        "desc": "Autonomous Python script for instant QR code generation featuring a premium user interface.",
+        "price": "FREE",
+        "btn_text": "View Details",
+        "btn_link": "quickqr.html",
+        "style": "card-dark",
+        "screens": [
+            "screen1.png",
+            "screen2.png",
+            "screen3.png"
+        ]
+    },
+    {
+        "id": 2,
+        "tag": "Python / aiogram",
+        "title": "Custom Telegram WebApp Bot",
+        "desc": "Turnkey development of advanced Telegram bots with interactive HTML5 menus for your business or crypto project.",
+        "price": "$100",
+        "btn_text": "Order in TG",
+        "btn_link": "https://t.me",
+        "style": "card-light",
+        "screens": [
+            "screen4.png",
+            "screen5.png",
+            "screen6.png"
+        ]
+    },
+    {
+        "id": 3,
+        "tag": "Python / FastAPI",
+        "title": "Synapse REST Engine",
+        "desc": "High-performance backend API boilerplate with production-ready JWT security and auto PostgreSQL bindings.",
+        "price": "$150",
+        "btn_text": "Order API",
+        "btn_link": "https://t.me",
+        "style": "card-dark",
+        "screens": [
+            "screen7.png",
+            "screen8.png",
+            "screen9.png"
+        ]
+    }
+]

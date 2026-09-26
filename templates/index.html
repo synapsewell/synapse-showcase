@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Synapse Showcase — Premium Developer Store</title>
+    <link rel="preconnect" href="https://googleapis.com">
+    <link rel="preconnect" href="https://gstatic.com" crossorigin>
+    <link href="https://googleapis.com" rel="stylesheet">
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Lato', sans-serif;
+            background-color: #120709;
+            color: #d99b59;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 4rem 2rem;
+            position: relative;
+            overflow-x: hidden;
+            cursor: none !important;
+        }
+
+        a, button, .lang-switcher, input, textarea {
+            cursor: none !important;
+        }
+
+        b, strong {
+            font-weight: 900 !important;
+        }
+
+        /* ИНТЕРАКТИВНЫЙ СЕТЧАТЫЙ ФОН */
+        .interactive-grid-bg {
+            position: fixed;
+            top: -10%;
+            left: -10%;
+            width: 120%;
+            height: 120%;
+            z-index: 1;
+            pointer-events: none;
+            background-image: radial-gradient(rgba(217, 155, 89, 0.12) 1px, transparent 1px);
+            background-size: 30px 30px;
+            will-change: transform;
+            transition: transform 0.1s ease-out;
+        }
+
+        /* ДИЗАЙН КАСТОМНОГО ПРИЦЕЛА И ВОЛН */
+        .cursor-dot {
+            position: fixed;
+            width: 6px;
+            height: 6px;
+            background-color: #d99b59;
+            border-radius: 50%;
+            z-index: 10000;
+            pointer-events: none;
+            transform: translate3d(-50%, -50%, 0);
+        }
+
+        .cursor-outline {
+            position: fixed;
+            width: 26px;
+            height: 26px;
+            border: 1px solid #d99b59;
+            border-radius: 50%;
+            z-index: 9999;
+            pointer-events: none;
+            transform: translate3d(-50%, -50%, 0);
+            transition: transform 0.1s ease-out, width 0.3s ease, height 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .cursor-outline.hovered {
+            width: 14px;
+            height: 14px;
+            background-color: rgba(217, 155, 89, 0.15);
+            border-color: #f2b372;
+        }
+
+        .parallax-wave {
+            position: fixed;
+            z-index: 5;
+            width: 420px;
+            height: 420px;
+            pointer-events: none;
+        }
+
+        .parallax-wave svg {
+            width: 100%;
+            height: 100%;
+            fill: #d99b59;
+            filter: drop-shadow(0 15px 30px rgba(0, 0, 0, 0.7));
+        }
+
+        .wave-top-left { top: -90px; left: -90px; }
+        .wave-bottom-right { bottom: -90px; right: -90px; }
+        /* МОДАЛЬНОЕ ОКНО ФОРМЫ ЗАКАЗА */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(18, 7, 9, 0.7);
+            backdrop-filter: blur(0px);
+            -webkit-backdrop-filter: blur(0px);
+            z-index: 9990;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease, backdrop-filter 0.4s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .modal-window {
+            background: rgba(43, 22, 26, 0.9);
+            border: 1px solid #d99b59;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), 0 0 30px rgba(217, 155, 89, 0.1);
+            border-radius: 16px;
+            padding: 3rem 2.5rem;
+            width: 100%;
+            max-width: 500px;
+            position: relative;
+            transform: scale(0.9) translateY(20px);
+            transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .modal-overlay.active .modal-window {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: transparent;
+            border: none;
+            color: #d99b59;
+            font-size: 1.5rem;
+            font-weight: 300;
+            line-height: 1;
+            padding: 0.5rem;
+            transition: transform 0.3s ease, color 0.3s ease;
+        }
+        .modal-close:hover {
+            color: #f2b372;
+            transform: rotate(90deg);
+        }
+
+        .modal-title {
+            font-size: 1.8rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(217, 155, 89, 0.3);
+            padding-bottom: 0.8rem;
+        }
+
+        .modal-subtitle {
+            font-size: 0.95rem;
+            font-weight: 400;
+            color: #f2b372;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-group label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 700;
+            color: rgba(217, 155, 89, 0.8);
+        }
+
+        .form-input {
+            background: rgba(18, 7, 9, 0.5);
+            border: 1px solid rgba(217, 155, 89, 0.3);
+            border-radius: 6px;
+            padding: 0.9rem 1rem;
+            color: #d99b59;
+            font-family: 'Lato', sans-serif;
+            font-size: 1rem;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+            width: 100%;
+            outline: none;
+        }
+
+        .form-input:focus {
+            border-color: #d99b59;
+            background: rgba(18, 7, 9, 0.8);
+            box-shadow: 0 0 10px rgba(217, 155, 89, 0.2);
+        }
+
+        textarea.form-input {
+            resize: none;
+            min-height: 120px;
+        }
+
+        .modal-submit-btn {
+            width: 100%;
+            padding: 1rem;
+            background: #d99b59;
+            color: #120709;
+            border: 1px solid transparent;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.4s ease;
+            margin-top: 1rem;
+        }
+
+        .modal-submit-btn:hover {
+            background: #120709;
+            color: #d99b59;
+            border-color: #d99b59;
+            box-shadow: 0 0 15px rgba(217, 155, 89, 0.3);
+        }
+
+        .modal-submit-btn:disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        /* СЕТКА КОНТЕНТА, КНОПКА ЯЗЫКА И КАРТОЧКИ ТОВАРОВ */
+        .content-wrapper {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            max-width: 1300px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 5rem;
+            position: relative;
+            width: 100%;
+        }
+        header h1 {
+            font-size: 2.5rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            border-bottom: 2px solid #d99b59;
+            padding-bottom: 1rem;
+            display: inline-block;
+        }
+
+        .lang-switcher {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: rgba(43, 22, 26, 0.6);
+            border: 1px solid rgba(217, 155, 89, 0.3);
+            color: #d99b59;
+            padding: 0.6rem 1.2rem;
+            font-weight: 700;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        .lang-switcher:hover {
+            background: #d99b59;
+            color: #120709;
+            border-color: #d99b59;
+            box-shadow: 0 0 15px rgba(217, 155, 89, 0.4);
+        }
+
+        .store-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 2rem;
+            width: 100%;
+        }
+
+        .product-card {
+            background: rgba(43, 22, 26, 0.5);
+            border: 1px solid rgba(217, 155, 89, 0.15);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            color: #d99b59;
+            border-radius: 16px;
+            padding: 2.5rem 2rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            width: calc(33.333% - 1.4rem);
+            min-width: 340px;
+            max-width: 380px;
+            min-height: 540px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            opacity: 0;
+            transform: translateY(40px);
+        }
+
+        .animate-card {
+            animation: slideUpFadeIn 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+            transition: background-color 0.4s ease, border-color 0.4s ease, color 0.4s ease, box-shadow 0.4s ease, transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        @keyframes slideUpFadeIn {
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .card-delay-1 { animation-delay: 0.1s; }
+        .card-delay-2 { animation-delay: 0.25s; }
+        .card-delay-3 { animation-delay: 0.4s; }
+
+        .product-card:hover {
+            background: rgba(43, 22, 26, 0.95) !important;
+            border-color: #d99b59 !important;
+            color: #d99b59 !important;
+            transform: translateY(-8px) !important;
+            box-shadow: 0 30px 60px rgba(43, 22, 26, 0.6);
+        }
+
+        .card-header { margin-bottom: 0.5rem; }
+        .tag {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 700;
+            margin-bottom: 0.4rem;
+            display: inline-block;
+            color: rgba(217, 155, 89, 0.8);
+            transition: color 0.4s ease;
+        }
+        .product-card:hover .tag { color: #d99b59; }
+
+        .product-title {
+            font-size: 1.7rem;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 0.8rem;
+        }
+        .product-desc {
+            font-size: 1.05rem;
+            font-weight: 300;
+            line-height: 1.5;
+            min-height: 100px;
+        }
+
+        .hover-gallery-wrapper {
+            margin: 0.8rem 0;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+            width: 100%;
+            height: 230px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid rgba(217, 155, 89, 0.3);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+            position: relative;
+        }
+        .slider-track {
+            display: flex;
+            width: 300%;
+            height: 100%;
+            transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        .slider-track img {
+            width: 33.333%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .product-card:hover .hover-gallery-wrapper { opacity: 1; transform: translateY(0); }
+
+        .card-footer {
+            margin-top: auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding-top: 1.2rem;
+            width: 100%;
+        }
+        .price { font-size: 1.5rem; font-weight: 900; letter-spacing: 1px; white-space: nowrap; flex-shrink: 0; }
+        .btn {
+            display: inline-block;
+            padding: 0.8rem 1.4rem;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-decoration: none;
+            border-radius: 6px;
+            background-color: #d99b59;
+            color: #120709;
+            transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease;
+            text-align: center;
+            white-space: nowrap;
+            border: 1px solid transparent;
+        }
+        .product-card:hover .btn {
+            background-color: #120709;
+            color: #d99b59;
+            border-color: #d99b59;
+        }
+        .product-card:hover .btn:hover { background-color: #2b161a; }
+
+        @media (max-width: 1080px) { .product-card { width: calc(50% - 1rem); } }
+        @media (max-width: 768px) {
+            .store-container { flex-direction: column; align-items: center; }
+            .product-card { width: 100%; max-width: 360px; }
+            body { padding: 2rem 1rem; }
+            header { margin-bottom: 3rem; }
+            .lang-switcher { top: -2.5rem; right: auto; left: 50%; transform: translateX(-50%); }
+            .parallax-wave { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="interactive-grid-bg" id="gridBg"></div>
+    <div class="cursor-dot" id="cursorDot"></div>
+    <div class="cursor-outline" id="cursorOutline"></div>
+
+    <div class="parallax-wave wave-top-left" id="waveLeft">
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+            <path d="M0,0 L100,0 C90,15 95,25 80,30 C65,35 70,50 55,55 C40,60 45,75 30,80 C15,85 20,95 0,100 Z" />
+        </svg>
+    </div>
+
+    <div class="parallax-wave wave-bottom-right" id="waveRight">
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+            <path d="M100,100 L0,100 C10,85 5,75 20,70 C35,65 30,50 45,45 C60,40 55,25 70,20 C85,15 80,5 100,0 Z" />
+        </svg>
+    </div>
+
+    <!-- ВСПЛЫВАЮЩЕЕ ОКНО ФОРМЫ ЗАКАЗА -->
+    <div class="modal-overlay" id="orderModal">
+        <div class="modal-window">
+            <button class="modal-close" onclick="closeOrderModal()">&times;</button>
+            <h2 class="modal-title" id="modalTitle">Order Service</h2>
+            <p class="modal-subtitle" id="modalSubtitle">Please provide details to submit your request.</p>
+
+            <form id="orderForm" onsubmit="sendOrderData(event)">
+                <div class="form-group">
+                    <label id="labelContact" for="clientContact">Your Contact (TG, Discord, Email)</label>
+                    <input type="text" class="form-input" id="clientContact" required autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label id="labelTask" for="clientTask">Brief Task Description</label>
+                    <textarea class="form-input" id="clientTask" required></textarea>
+                </div>
+                <button type="submit" class="modal-submit-btn" id="submitFormBtn">Submit Order</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="content-wrapper">
+        <header>
+            <h1 id="mainTitle">Synapse Showcase</h1>
+            <button class="lang-switcher" id="langBtn" onclick="toggleLanguage()">RU</button>
+        </header>
+
+        <!-- ГЛАВНЫЙ КОНТЕЙНЕР СЕТКИ ТОВАРОВ -->
+        <main class="store-container">
+
+            <!-- PRODUCT 1 -->
+            <article class="product-card animate-card card-delay-1" onmouseenter="startSlider(this)" onmouseleave="stopSlider(this)">
+                <div class="card-header">
+                    <span class="tag">Python / Flask</span>
+                    <h2 class="product-title">QuickQR Generator</h2>
+                    <p class="product-desc" id="p1Desc">Autonomous Python script for instant QR code generation featuring a premium user interface.</p>
+                </div>
+                <div class="hover-gallery-wrapper">
+                    <div class="slider-track">
+                        <img src="{{ url_for('static', filename='screen1.png') }}" alt="Preview 1">
+                        <img src="{{ url_for('static', filename='screen2.png') }}" alt="Preview 2">
+                        <img src="{{ url_for('static', filename='screen3.png') }}" alt="Preview 3">
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <span class="price" id="p1Price">&#36;15</span>
+                    <button class="btn" id="p1Btn" onclick="openOrderModal('QuickQR Generator')">Order</button>
+                </div>
+            </article>
+
+            <!-- PRODUCT 2 -->
+            <article class="product-card animate-card card-delay-2" onmouseenter="startSlider(this)" onmouseleave="stopSlider(this)">
+                <div class="card-header">
+                    <span class="tag">Python / aiogram</span>
+                    <h2 class="product-title">Custom Telegram WebApp Bot</h2>
+                    <p class="product-desc" id="p2Desc">Turnkey development of advanced Telegram bots with interactive HTML5 menus for your business or crypto project. <b style='color: #f2b372; display: block; margin-top: 0.5rem;'>Price is negotiable.</b></p>
+                </div>
+                <div class="hover-gallery-wrapper">
+                    <div class="slider-track">
+                        <img src="{{ url_for('static', filename='screen4.png') }}" alt="Preview 4">
+                        <img src="{{ url_for('static', filename='screen5.png') }}" alt="Preview 5">
+                        <img src="{{ url_for('static', filename='screen6.png') }}" alt="Preview 6">
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <span class="price" id="p2Price">&#36;100</span>
+                    <button class="btn" id="p2Btn" onclick="openOrderModal('Custom Telegram WebApp Bot')">Order</button>
+                </div>
+            </article>
+
+            <!-- PRODUCT 3 -->
+            <article class="product-card animate-card card-delay-3">
+                <div class="card-header">
+                    <span class="tag">Flask / Front-end</span>
+                    <h2 class="product-title">Premium Web Showcase</h2>
+                    <p class="product-desc" id="p3Desc">Development of high-end, responsive portfolio websites and web showcases with cinematic interactive effects. <b style='color: #f2b372; display: block; margin-top: 0.5rem;'>Price is negotiable.</b></p>
+                </div>
+                <div class="card-footer">
+                    <span class="price" id="p3Price">&#36;150</span>
+                    <button class="btn" id="p3Btn" onclick="openOrderModal('Premium Web Showcase')">Order</button>
+                </div>
+            </article>
+
+        </main>
+    </div>
+    <script>
+        const gridBg = document.getElementById('gridBg');
+        const waveLeft = document.getElementById('waveLeft');
+        const waveRight = document.getElementById('waveRight');
+
+        const cursorDot = document.getElementById('cursorDot');
+        const cursorOutline = document.getElementById('cursorOutline');
+
+        // ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
+        let currentLang = 'EN';
+        let selectedProduct = '';
+
+        window.addEventListener('mousemove', (e) => {
+            const mouseX = e.clientX;
+            const mouseY = e.clientY;
+
+            const X = (mouseX - window.innerWidth / 2) / (window.innerWidth / 2);
+            const Y = (mouseY - window.innerHeight / 2) / (window.innerHeight / 2);
+
+            cursorDot.style.left = `${mouseX}px`;
+            cursorDot.style.top = `${mouseY}px`;
+
+            cursorOutline.style.left = `${mouseX}px`;
+            cursorOutline.style.top = `${mouseY}px`;
+
+            if (gridBg) gridBg.style.transform = `translate3d(${X * 20}px, ${Y * 20}px, 0)`;
+
+            if (waveLeft) waveLeft.style.transform = `translate3d(${X * -35}px, ${Y * -35}px, 0)`;
+            if (waveRight) waveRight.style.transform = `translate3d(${X * 35}px, ${Y * 35}px, 0)`;
+        });
+
+        function refreshHoverEffects() {
+            const interactiveElements = document.querySelectorAll('a, button, .product-card, .lang-switcher, .form-input, .modal-close');
+            interactiveElements.forEach(el => {
+                el.addEventListener('mouseenter', () => cursorOutline.classList.add('hovered'));
+                el.addEventListener('mouseleave', () => cursorOutline.classList.remove('hovered'));
+            });
+        }
+        refreshHoverEffects();
+
+        let sliderIntervals = new Map();
+
+        function startSlider(cardElement) {
+            const track = cardElement.querySelector('.slider-track');
+            if (!track) return;
+            let currentIndex = 0;
+            const totalSlides = 3;
+            const intervalId = setInterval(() => {
+                currentIndex = (currentIndex + 1) % totalSlides;
+                track.style.transform = `translateX(-${(currentIndex * 100) / totalSlides}%)`;
+            }, 2000);
+            sliderIntervals.set(cardElement, intervalId);
+        }
+
+        function stopSlider(cardElement) {
+            if (sliderIntervals.has(cardElement)) {
+                clearInterval(sliderIntervals.get(cardElement));
+                sliderIntervals.delete(cardElement);
+            }
+            const track = cardElement.querySelector('.slider-track');
+            if (track) track.style.transform = 'translateX(0%)';
+        }
+
+        // Управление модальным окном
+        function openOrderModal(productName) {
+            selectedProduct = productName;
+            const modal = document.getElementById('orderModal');
+            if (modal) modal.classList.add('active');
+            updateModalSubtitle();
+            refreshHoverEffects();
+        }
+
+        function closeOrderModal() {
+            const modal = document.getElementById('orderModal');
+            if (modal) modal.classList.remove('active');
+            const form = document.getElementById('orderForm');
+            if (form) form.reset();
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeOrderModal();
+        });
+
+        function updateModalSubtitle() {
+            const subtitleEl = document.getElementById('modalSubtitle');
+            if (!subtitleEl) return;
+            if (currentLang === 'EN') {
+                subtitleEl.innerHTML = `You are ordering: <b style="color: #d99b59;">${selectedProduct}</b>. Please fill out the form.`;
+            } else {
+                subtitleEl.innerHTML = `Вы заказываете: <b style="color: #d99b59;">${selectedProduct}</b>. Пожалуйста, заполните форму.`;
+            }
+        }
+        // ==========================================================================
+        // АСИНХРОННАЯ ОТПРАВКА ДАННЫХ ФОРМЫ НА BACKEND FLASK
+        // ==========================================================================
+        async function sendOrderData(event) {
+            event.preventDefault();
+
+            const submitBtn = document.getElementById('submitFormBtn');
+            const contactInput = document.getElementById('clientContact').value;
+            const taskInput = document.getElementById('clientTask').value;
+
+            if (!submitBtn) return;
+
+            submitBtn.disabled = true;
+            const originalBtnText = submitBtn.innerText;
+            submitBtn.innerText = currentLang === 'EN' ? 'Sending...' : 'Отправка...';
+
+            try {
+                const response = await fetch('/submit-order', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        product_name: selectedProduct,
+                        client_contact: contactInput,
+                        client_task: taskInput,
+                        lang: currentLang
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.status === 'success') {
+                    alert(currentLang === 'EN' ? 'Thank you! Your order has been successfully submitted.' : 'Спасибо! Ваш заказ успешно отправлен.');
+                    closeOrderModal();
+                } else {
+                    alert(currentLang === 'EN' ? 'Error sending order. Please try again.' : 'Ошибка отправки заказа. Пожалуйста, попробуйте еще раз.');
+                }
+            } catch (error) {
+                console.error('Network Error:', error);
+                alert(currentLang === 'EN' ? 'Server unavailable. Check connection.' : 'Сервер недоступен. Проверьте соединение.');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerText = originalBtnText;
+            }
+        }
+
+        // База мультиязычности
+        const translations = {
+            EN: {
+                btnText: "RU",
+                p1Desc: "Autonomous Python script for instant QR code generation featuring a premium user interface.",
+                p1Price: "15",
+                p1Btn: "Order",
+                p2Desc: "Turnkey development of advanced Telegram bots with interactive HTML5 menus for your business or crypto project. <b style='color: #f2b372; display: block; margin-top: 0.5rem;'>Price is negotiable.</b>",
+                p2Price: "100",
+                p2Btn: "Order",
+                p3Desc: "Development of high-end, responsive portfolio websites and web showcases with cinematic interactive effects. <b style='color: #f2b372; display: block; margin-top: 0.5rem;'>Price is negotiable.</b>",
+                p3Price: "150",
+                p3Btn: "Order",
+                modalTitle: "Order Service",
+                labelContact: "Your Contact (TG, Discord, Email)",
+                labelTask: "Brief Task Description",
+                submitFormBtn: "Submit Order"
+            },
+            RU: {
+                btnText: "EN",
+                p1Desc: "Автономный скрипт на Python для мгновенной генерации QR-кодов с премиальным интерфейсом.",
+                p1Price: "15",
+                p1Btn: "Заказать",
+                p2Desc: "Разработка продвинутых Telegram-ботов с интерактивным HTML5-меню под ключ для вашего бизнеса или крипто-проекта. <b style='color: #f2b372; display: block; margin-top: 0.5rem;'>Цена договорная.</b>",
+                p2Price: "100",
+                p2Btn: "Заказать",
+                p3Desc: "Разработка высококлассных, адаптивных сайтов-портфолио и веб-витрин с кинематографичными интерактивными эффектами. <b style='color: #f2b372; display: block; margin-top: 0.5rem;'>Цена договорная.</b>",
+                p3Price: "150",
+                p3Btn: "Заказать",
+                modalTitle: "Заказ услуги",
+                labelContact: "Ваш контакт (ТГ, Дискорд, Почта)",
+                labelTask: "Краткое описание задачи (ТЗ)",
+                submitFormBtn: "Отправить заказ"
+            }
+        };
+
+        function triggerCardAnimation() {
+            const cards = document.querySelectorAll('.product-card');
+            cards.forEach(card => {
+                card.classList.remove('animate-card');
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(40px)';
+                void card.offsetWidth;
+                card.classList.add('animate-card');
+            });
+        }
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'EN' ? 'RU' : 'EN';
+            document.getElementById('langBtn').innerText = translations[currentLang].btnText;
+
+            document.getElementById('p1Desc').innerHTML = translations[currentLang].p1Desc;
+            document.getElementById('p1Price').innerHTML = `&#36;${translations[currentLang].p1Price}`;
+            document.getElementById('p1Btn').innerText = translations[currentLang].p1Btn;
+
+            document.getElementById('p2Desc').innerHTML = translations[currentLang].p2Desc;
+            document.getElementById('p2Price').innerHTML = `&#36;${translations[currentLang].p2Price}`;
+            document.getElementById('p2Btn').innerText = translations[currentLang].p2Btn;
+
+            document.getElementById('p3Desc').innerHTML = translations[currentLang].p3Desc;
+            document.getElementById('p3Price').innerHTML = `&#36;${translations[currentLang].p3Price}`;
+            document.getElementById('p3Btn').innerText = translations[currentLang].p3Btn;
+
+            document.getElementById('modalTitle').innerText = translations[currentLang].modalTitle;
+            document.getElementById('labelContact').innerText = translations[currentLang].labelContact;
+            document.getElementById('labelTask').innerText = translations[currentLang].labelTask;
+            document.getElementById('submitFormBtn').innerText = translations[currentLang].submitFormBtn;
+
+            if (selectedProduct) {
+                updateModalSubtitle();
+            }
+
+            triggerCardAnimation();
+        }
+    </script>
+</body>
+</html>
