@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, jsonify
 import requests
 
-# Подключаем папку со скриншотами assets
+# Инициализируем Flask с папкой для скриншотов assets
 app = Flask(__name__, static_folder='assets')
 
 # ==========================================================================
@@ -26,26 +26,27 @@ def submit_order():
         client_contact = data.get('client_contact', 'Not provided')
         client_task = data.get('client_task', 'Not provided')
 
-        # Форматируем текст пуш-уведомления для телефона и ПК
+        # Форматируем текст пуш-уведомления (чистая строка без байтов)
         push_message = (
+            f"📦 Товар: {product_name}\n"
             f"👤 Контакт: {client_contact}\n"
             f"📝 ТЗ: {client_task}"
         )
 
-        # Отправляем запрос на официальный сервер ntfy
         url = f"https://ntfy.sh/{NTFY_TOPIC}"
 
+        # На серверах Render (Linux) заголовки должны быть СТРОГО обычными строками без .encode()
         headers = {
-            "Title": f"📦 Новый заказ: {product_name}".encode('utf-8'),
-            "Priority": "high",  # Пробивает режим энергосбережения и беззвучный режим
-            "Tags": "shopping_bags,bell"  # Добавит красивые эмодзи в пуш-уведомление
+            "Title": f"New Order!",
+            "Priority": "high",
+            "Tags": "shopping_bags,bell"
         }
 
-        # Пересылаем текст заказа в кодировке utf-8, чтобы русский текст не ломался
+        # Кодируем в UTF-8 ТОЛЬКО само текстовое тело сообщения, чтобы не ломался русский язык
         response = requests.post(url, data=push_message.encode('utf-8'), headers=headers, timeout=10)
 
         if response.status_code == 200:
-            print("✅ Успех! Заказ отправлен, пуш летит на телефон и ПК.")
+            print("✅ Успех! Заказ отправлен с сервера Render в ntfy.")
             return jsonify({"status": "success", "message": "Order sent successfully!"}), 200
         else:
             print(f"❗ Ошибка ntfy сервера. Код ответа: {response.status_code}")
@@ -53,8 +54,8 @@ def submit_order():
 
     except Exception as e:
         print(f"❌ Критическая ошибка на сервере Flask: {str(e)}")
-        return jsonify({"status": "error", "message": "Internal server error"}), 500
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000)
